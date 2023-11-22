@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y tmux \
     python3-pip \
     wget \
     libxrender1 \
+    libxext6 \
     libfontconfig1 \
     default-mysql-client \
     npm \
