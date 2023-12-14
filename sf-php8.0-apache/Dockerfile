@@ -24,6 +24,9 @@ RUN apt-get update && apt-get install --no-install-recommends -y tmux \
     npm \
     libldap2-dev
 
+# UPDATE NPM TO LATEST
+RUN npm cache clean -f && npm install -g n && n stable
+
 # PHP LIBRARIES CONFIGURATION
 RUN docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/
 
