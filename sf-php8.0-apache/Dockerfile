@@ -22,13 +22,11 @@ RUN apt-get update && apt-get install --no-install-recommends -y tmux \
     libfontconfig1 \
     default-mysql-client \
     npm \
-    libldap2-dev
+    pdftk \
+    cron
 
 # UPDATE NPM TO LATEST
 RUN npm cache clean -f && npm install -g n && n stable
-
-# PHP LIBRARIES CONFIGURATION
-RUN docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/
 
 # PHP EXTENSIONS INSTALLATION
 RUN docker-php-ext-install pcntl \
@@ -36,8 +34,7 @@ RUN docker-php-ext-install pcntl \
     gd \
     xml \
     intl \
-    fileinfo \
-    ldap
+    fileinfo
 
 RUN docker-php-ext-install pdo pdo_mysql
 RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
@@ -70,3 +67,8 @@ WORKDIR /code
 RUN a2enmod rewrite headers
 
 EXPOSE 80:80
+
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
