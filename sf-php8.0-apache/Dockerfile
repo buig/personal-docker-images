@@ -3,6 +3,7 @@ FROM php:8.0-apache
 # PHP CONFIGURATION
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN echo "memory_limit=-1" > /usr/local/etc/php/conf.d/memory-limit-php.ini
+RUN echo "date.timezone=Europe/Madrid" > /usr/local/etc/php/conf.d/timezone.ini
 
 # UBUNTU PACKAGES INSTALLATION
 RUN apt-get update && apt-get install --no-install-recommends -y tmux \
@@ -70,5 +71,7 @@ EXPOSE 80:80
 
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+ENV TZ=Europe/Madrid
 
 ENTRYPOINT ["/entrypoint.sh"]
