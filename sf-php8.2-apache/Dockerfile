@@ -21,14 +21,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y tmux \
     libxext6 \
     libfontconfig1 \
     default-mysql-client \
-    npm \
-    libldap2-dev
+    npm
 
 # UPDATE NPM TO LATEST
 RUN npm cache clean -f && npm install -g n && n stable
-
-# PHP LIBRARIES CONFIGURATION
-RUN docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/
 
 # PHP EXTENSIONS INSTALLATION
 RUN docker-php-ext-install pcntl \
@@ -36,8 +32,7 @@ RUN docker-php-ext-install pcntl \
     gd \
     xml \
     intl \
-    fileinfo \
-    ldap
+    fileinfo
 
 RUN docker-php-ext-install pdo pdo_mysql
 RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
@@ -49,6 +44,9 @@ RUN curl -o composer-setup.php https://getcomposer.org/installer && \
     php composer-setup.php --version=2.6.2 --quiet && \
     mv composer.phar /usr/local/bin/composer
 
+RUN wget https://get.symfony.com/cli/installer -O - | bash && \
+    mv /root/.symfony*/bin/symfony /usr/local/bin/symfony
+
 # INSTALLING LIBRARY FOR PDF
 RUN cd /tmp/ && \
     wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz && \
@@ -58,7 +56,7 @@ RUN cd /tmp/ && \
     rm -r wkhtmltox wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
 
 # CLEAN IMAGE
-RUN apt purge --auto-remove && apt clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get purge -y --auto-remove && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 #WORKING DIRECTORY
 WORKDIR /code
