@@ -4,6 +4,12 @@ FROM php:8.2-apache
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN echo "memory_limit=-1" > /usr/local/etc/php/conf.d/memory-limit-php.ini
 
+RUN dpkg --add-architecture amd64 \
+ && apt-get update \
+ && apt-get install --no-install-recommends -y \
+      libc6:amd64 libstdc++6:amd64 \
+      libxrender1:amd64 libxext6:amd64 libfontconfig1:amd64
+
 # UBUNTU PACKAGES INSTALLATION
 RUN apt-get update && apt-get install --no-install-recommends -y \
     libjpeg-dev \
