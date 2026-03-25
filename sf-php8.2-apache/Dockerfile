@@ -4,28 +4,31 @@ FROM php:8.2-apache
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN echo "memory_limit=-1" > /usr/local/etc/php/conf.d/memory-limit-php.ini
 
+# PAQUETES DEL SISTEMA + DEPENDENCIAS DE COMPILACIÓN
 RUN dpkg --add-architecture amd64 \
- && apt-get update \
- && apt-get install --no-install-recommends -y \
-      libc6:amd64 libstdc++6:amd64 \
-      libxrender1:amd64 libxext6:amd64 libfontconfig1:amd64
-
-# UBUNTU PACKAGES INSTALLATION
-RUN apt-get update && apt-get install --no-install-recommends -y \
+    && apt-get update \
+    && apt-get install --no-install-recommends -y \
+    libc6:amd64 libstdc++6:amd64 \
+    libxrender1:amd64 libxext6:amd64 libfontconfig1:amd64 \
     libjpeg-dev \
     libpng-dev \
+    libfreetype6-dev \
     libzip-dev \
     libxml2-dev \
     zlib1g-dev \
+    libicu-dev \
+    fonts-dejavu-core \
     vim git unzip tmux python3 python3-pip wget \
-    libxrender1 libxext6 libfontconfig1 default-mysql-client npm
+    libxrender1 libxext6 libfontconfig1 default-mysql-client npm \
+    && rm -rf /var/lib/apt/lists/*
 
 # ACTUALIZAR NPM
 RUN npm cache clean -f && npm install -g n && n stable
 
 # CONFIGURAR Y COMPILAR EXTENSIONES PHP
-RUN docker-php-ext-configure gd --with-jpeg
-RUN docker-php-ext-install \
+# GD con FreeType + JPEG en un solo RUN para garantizar que las dev libs están disponibles
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
     pcntl \
     zip \
     gd \
@@ -34,8 +37,8 @@ RUN docker-php-ext-install \
     fileinfo \
     pdo \
     pdo_mysql \
-    mysqli && \
-    docker-php-ext-enable mysqli
+    mysqli \
+    && docker-php-ext-enable mysqli
 
 # COMPOSER
 RUN curl -o composer-setup.php https://getcomposer.org/installer && \
@@ -55,9 +58,6 @@ RUN cd /tmp/ && \
     mv wkhtmltox/bin/wkhtmlto* /usr/bin/ && \
     ln -nfs /usr/bin/wkhtmltopdf /usr/local/bin/wkhtmltopdf && \
     rm -r wkhtmltox*
-
-# LIMPIEZA
-RUN apt-get purge -y --auto-remove && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # CONFIGURACIÓN APACHE
 RUN a2enmod rewrite headers
